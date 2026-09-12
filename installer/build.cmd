@@ -37,6 +37,14 @@ echo ERROR: Unknown command '%1'
 exit /b 1
 
 :build_all
+where uv >nul 2>nul
+if errorlevel 1 (
+    echo [*] uv not found, installing...
+    winget install --id=astral-sh.uv -e --source winget
+    if errorlevel 1 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    set "PATH=%USERPROFILE%\.local\bin;%PATH%"
+)
+
 echo [*] Installing dependencies...
 REM --reinstall-package onnxruntime: a prior --directml build swaps in onnxruntime-directml,
 REM which shares onnxruntime's package directory. Uninstalling/swapping it back can leave
@@ -58,6 +66,19 @@ if "%2"=="--directml" (
     echo [*] Swapping onnxruntime for onnxruntime-directml ^(AMD/Intel/NVIDIA GPU via DirectML^)...
     call uv pip install --python %VENV_PYTHON% --force-reinstall --no-deps onnxruntime-directml
     if errorlevel 1 exit /b 1
+)
+
+REM Nuitka needs an MSVC C++ toolchain to compile the standalone exe. Detect it via
+REM vswhere (installed alongside any VS product/Build Tools); install Build Tools with
+REM the VC++ workload via winget if nothing satisfies that requirement.
+set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+set "MSVC_FOUND="
+if exist "%VSWHERE%" (
+    for /f "usebackq tokens=*" %%I in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "MSVC_FOUND=%%I"
+)
+if not defined MSVC_FOUND (
+    echo [*] MSVC Build Tools not found, installing via winget...
+    winget install --id Microsoft.VisualStudio.2022.BuildTools -e --source winget --override "--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
 )
 
 echo [*] Building osdocs-mcp.exe...
@@ -92,13 +113,17 @@ if errorlevel 1 (
 
 echo [*] Building installer...
 if not exist "!INNO_PATH!" (
-    echo [SKIP] Inno Setup not found at !INNO_PATH!
-    echo.
-    echo To create Windows installer, install Inno Setup with:
-    echo.
-    echo   winget install --id JRSoftware.InnoSetup -e -s winget -i
-    echo.
-    echo Then run: installer\build.cmd installer
+    echo [*] Inno Setup not found, installing via winget...
+    winget install --id JRSoftware.InnoSetup -e --source winget
+    set "INNO_PATH="
+    for /f "delims=" %%I in ('where iscc 2^>nul') do if not defined INNO_PATH set "INNO_PATH=%%I"
+    if not defined INNO_PATH if exist "%USERPROFILE%\AppData\Local\Programs\Inno Setup 6\ISCC.exe" set "INNO_PATH=%USERPROFILE%\AppData\Local\Programs\Inno Setup 6\ISCC.exe"
+    if not defined INNO_PATH if exist "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" set "INNO_PATH=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
+    if not defined INNO_PATH if exist "%ProgramFiles%\Inno Setup 6\ISCC.exe" set "INNO_PATH=%ProgramFiles%\Inno Setup 6\ISCC.exe"
+)
+if not exist "!INNO_PATH!" (
+    echo [SKIP] Inno Setup still not found at !INNO_PATH! after install attempt
+    echo Run: installer\build.cmd installer
 ) else (
     if not exist "!ISS_FILE!" (
         echo [SKIP] Installer script not found: !ISS_FILE!

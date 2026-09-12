@@ -10,6 +10,14 @@ set "UV_LINK_MODE=copy"
 
 set VENV_PYTHON=%~dp0..\.venv\Scripts\python.exe
 
+where uv >nul 2>nul
+if errorlevel 1 (
+    echo [*] uv not found, installing...
+    winget install --id=astral-sh.uv -e --source winget
+    if errorlevel 1 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    set "PATH=%USERPROFILE%\.local\bin;%PATH%"
+)
+
 if not exist "%VENV_PYTHON%" (
     echo [*] .venv not found, creating it...
     call uv sync
