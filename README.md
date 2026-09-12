@@ -11,7 +11,7 @@ Credit: Original project by [donnieprakoso](https://github.com/donnieprakoso) - 
 
 Enhancements:
 
-- Windows installer for one-click setup
+- Windows installer for one-click setup - [download from releases](https://github.com/madharjan/outsystems-docs/releases/latest)
 - Optional AMD/Intel/NVIDIA GPU acceleration via DirectML, with automatic CPU fallback
 - Fixed path resolution so the server works regardless of launch directory
 - Faster CLI - no MCP server startup cost on `--sync` and other commands
