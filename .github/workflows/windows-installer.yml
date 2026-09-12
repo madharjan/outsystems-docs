@@ -27,8 +27,8 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Install MSVC Build Tools
-        run: choco install visualstudio2022-workload-nativedesktop -y --package-parameters "--quiet --norestart --wait"
+      - name: Set up MSVC (already installed on windows-latest)
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install Nuitka
         run: uv pip install nuitka
