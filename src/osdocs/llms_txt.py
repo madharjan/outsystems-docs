@@ -14,7 +14,9 @@ to the ``href`` folder name; link text is derived from each ``href``'s filename.
 
 from __future__ import annotations
 
-from typing import NotRequired, TypedDict
+from typing import TypedDict
+
+from typing_extensions import NotRequired
 
 from osdocs._render import SectionTitles, TocEntry, document, header, humanize, iter_hrefs
 
