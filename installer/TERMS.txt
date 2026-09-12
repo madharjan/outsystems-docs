@@ -1,0 +1,184 @@
+TERMS OF SERVICE
+OutSystems-Docs MCP
+
+Last Updated: September 2026
+
+1. ACCEPTANCE OF TERMS
+By installing and using OutSystems-Docs MCP ("Software"), you agree to be
+bound by these terms. If you do not agree, do not use this Software.
+
+2. LICENSE STRUCTURE
+
+This software uses a three-tier license structure:
+
+  A. THIS TOOL (OutSystems-Docs MCP)
+     Licensed under Community Terms - see LICENSE.txt
+     - You may use for personal and internal business purposes
+     - You must retain license notices
+     - You must not redistribute without attribution
+
+  B. OUTSYSTEMS DOCUMENTATION
+     Licensed under CC BY-NC-ND 4.0
+     - Copyright (c) OutSystems
+     - Local use only (kept on your machine)
+     - Non-commercial use only
+     - No redistribution allowed
+     - No derivative works allowed
+     This tool RESPECTS this license by:
+       * Keeping all docs local to your machine
+       * Never redistributing or hosting docs
+       * Never caching docs on shared servers
+       * Facilitating CC BY-NC-ND 4.0 compliance
+
+  C. DEPENDENCIES
+     Each included component has its own license:
+     - fastembed (Apache 2.0)
+     - numpy (BSD)
+     - mcp[cli] (MIT)
+     - pyyaml (MIT)
+     - Python runtime (PSF)
+     See LICENSE.txt for details. You agree to comply with all third-party licenses.
+
+3. USAGE RESTRICTIONS
+You may NOT:
+- Redistribute the Software or any part of it
+- Host or serve OutSystems documentation to others (this violates CC BY-NC-ND 4.0)
+- Use the Software for commercial purposes without OutSystems permission
+- Use the Software to bypass OutSystems documentation terms
+- Reverse engineer or decompile the compiled executables
+- Remove or alter copyright or license notices
+- Use this Software to redistribute OutSystems documentation in any form
+
+4. DOCUMENTATION COMPLIANCE
+OutSystems documentation is copyrighted and licensed CC BY-NC-ND 4.0. By using
+this Software, you AGREE to:
+- Use documentation for non-commercial purposes only
+- Keep documentation local to your machine
+- NOT redistribute or republish documentation
+- NOT create derivative works from documentation
+- NOT host documentation on shared or public servers
+- Respect OutSystems' intellectual property rights
+
+This Software facilitates compliance by:
+- Caching documentation only locally
+- Requiring your own documentation sync
+- Keeping all data on your machine
+- NOT providing any redistribution capabilities
+
+5. NO WARRANTY
+This Software is provided "AS-IS" without warranty of any kind, express or implied.
+We make no guarantees regarding:
+- Accuracy or completeness of documentation
+- Performance or reliability
+- Suitability for any particular purpose
+- Freedom from defects or errors
+- Compliance with your local laws
+
+6. LIMITATION OF LIABILITY
+In no event shall we be liable for:
+- Data loss or corruption
+- Business interruption or lost profits
+- Indirect, incidental, or consequential damages
+- Any damages exceeding the amount you paid for this Software (if any)
+- Violations of third-party intellectual property rights
+- Regulatory or compliance violations
+
+This applies even if advised of the possibility of such damages.
+
+7. INDEMNIFICATION
+You agree to indemnify and hold harmless the developers from any claims, damages,
+or costs arising from:
+- Your use of this Software
+- Your violation of these terms
+- Your use of the Software to violate third-party rights (especially OutSystems docs)
+- Your breach of any law or regulation
+- Redistribution or misuse of OutSystems documentation
+
+8. TERMINATION
+We may terminate your license immediately if you:
+- Violate any term of this agreement
+- Use the Software illegally
+- Redistribute the Software or OutSystems documentation
+- Attempt to circumvent licensing restrictions
+- Violate OutSystems documentation terms
+
+Upon termination, you must stop using the Software and delete all copies.
+
+9. THIRD-PARTY COMPONENTS AND LICENSES
+This Software includes third-party components with their own licenses:
+
+- fastembed (Apache License 2.0)
+  For machine learning embeddings
+
+- numpy (BSD License)
+  For numerical computing
+
+- mcp[cli] (MIT License)
+  For Model Context Protocol implementation
+
+- pyyaml (MIT License)
+  For YAML configuration parsing
+
+- Python 3.10+ Runtime (PSF License)
+  Python Software Foundation License
+
+You agree to comply with all applicable third-party licenses.
+
+10. OUTSYSTEMS IP PROTECTION
+OutSystems retains all intellectual property rights to:
+- OutSystems documentation and content
+- OutSystems brand names and trademarks
+- OutSystems product information
+
+This Software does NOT grant you rights to:
+- Redistribute OutSystems documentation
+- Use OutSystems trademarks
+- Create commercial products from OutSystems docs
+- Host OutSystems documentation publicly
+
+11. PRIVACY
+This Software does NOT:
+- Collect personal information
+- Phone home or send usage data
+- Require account registration
+- Connect to remote servers (except for initial OutSystems documentation sync)
+
+Local configuration files are stored on your machine only. Agent configuration
+files are modified locally in your agent's configuration directory.
+
+12. MODIFICATIONS
+We may update these terms at any time. Continued use of the Software after changes
+constitutes acceptance of updated terms.
+
+13. GOVERNING LAW
+These terms are governed by applicable laws. Any disputes shall be resolved in
+accordance with local law.
+
+14. SEVERABILITY
+If any provision of these terms is found invalid or unenforceable, the remaining
+provisions continue in full force and effect.
+
+15. ENTIRE AGREEMENT
+These terms constitute the entire agreement between you and us regarding the Software
+and supersede all prior agreements or understandings.
+
+16. CONTACT
+For questions about these terms:
+- Review LICENSE.txt for this tool's license
+- Review https://creativecommons.org/licenses/by-nc-nd/4.0/ for OutSystems docs license
+- Create an issue on GitHub
+- Contact via repository discussions
+
+---
+
+SUMMARY OF LICENSES:
+This Tool:     Licensed under Community Terms (personal/internal use)
+OutSystems:    Licensed under CC BY-NC-ND 4.0 (local use only)
+Dependencies:  Apache 2.0, BSD, MIT, PSF (see individual licenses)
+
+By proceeding with installation, you acknowledge that you have read, understood, and
+agree to be bound by these Terms of Service AND the CC BY-NC-ND 4.0 license terms
+for OutSystems documentation.
+
+THIS IS A COMMUNITY PROJECT AND NOT AFFILIATED WITH OUTSYSTEMS.
+USE AT YOUR OWN RISK AND RESPECT ALL LICENSES.

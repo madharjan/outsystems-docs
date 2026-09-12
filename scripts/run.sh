@@ -1,11 +1,29 @@
 #!/usr/bin/env bash
-# Wrapper that routes uv run commands to the home-directory venv.
-# Usage: ./scripts/run.sh sync
-#        ./scripts/run.sh osmcp-serve
+# Run OutSystems-Docs MCP using the project-local .venv (created on first run)
+# Usage: ./scripts/run.sh --sync
+#        ./scripts/run.sh --agent-interactive
+# Note: --directml is Windows-only (DirectML) — use scripts\run.cmd --directml there instead.
 set -euo pipefail
 
-export UV_PROJECT_ENVIRONMENT="$HOME/.venv/outsystems-mcp"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR/.."
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
 
-exec uv run "$@"
+VENV_PYTHON="$PROJECT_ROOT/.venv/bin/python"
+
+if [[ ! -x "$VENV_PYTHON" ]]; then
+    echo "[*] .venv not found, creating it..."
+    uv sync
+fi
+
+ARGS=()
+for arg in "$@"; do
+    if [[ "$arg" == "--directml" ]]; then
+        echo "ERROR: --directml swaps to onnxruntime-directml, which is Windows-only. Use scripts\\run.cmd --directml instead." >&2
+        exit 1
+    else
+        ARGS+=("$arg")
+    fi
+done
+
+exec "$VENV_PYTHON" src/osdocs_mcp.py "${ARGS[@]}"

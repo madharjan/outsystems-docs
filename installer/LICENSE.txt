@@ -1,0 +1,40 @@
+OutSystems-Docs MCP
+Copyright (c) 2026 Community Contributors
+
+This software is provided "as-is" under the following terms:
+
+1. USAGE RIGHTS
+   - You may use this software for personal and commercial purposes
+   - You may modify the source code for your own use
+   - You must retain this license notice in any redistributed copies
+
+2. DOCUMENTATION
+   - OutSystems documentation is Copyright (c) OutSystems
+   - Licensed under CC BY-NC-ND 4.0
+   - This tool caches documentation locally for your own use
+   - Documentation is never redistributed or hosted
+
+3. DISCLAIMER
+   - This software is provided without warranty
+   - The authors are not liable for any damages caused by this software
+   - Use at your own risk
+
+4. THIRD-PARTY LICENSES
+   This software includes the following third-party components:
+
+   - fastembed (Apache 2.0)
+   - numpy (BSD)
+   - mcp[cli] (MIT)
+   - pyyaml (MIT)
+   - Nuitka (Apache 2.0)
+
+   See individual package licenses for details.
+
+5. COMPLIANCE
+   - This tool respects OutSystems documentation license terms
+   - All documentation remains local to your machine
+   - No redistribution of OutSystems documentation occurs
+   - This tool is community-supported and not affiliated with OutSystems
+
+For the full license text and attribution, see:
+https://github.com/madharjan/outsystems-docs

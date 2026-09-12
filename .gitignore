@@ -1,28 +1,46 @@
 # Python
 __pycache__/
 *.py[cod]
+*.so
 .pytest_cache/
+*.egg-info/
 
-# uv / virtualenv
-.venv/
-
-# Synced docs + derived artifacts (CC BY-NC-ND — never commit; see spec-first-tdd/00-use-case.md)
 data/
+.cache/
+logs/
 
-# macOS / editor junk
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build artifacts
+dist/
+
+
+# macOS / editor
 .DS_Store
+.vscode/
+.idea/
 
 # Local Claude Code settings
 .claude/
 
-# Demo recordings — review for on-screen PII before committing any of these
-demo/
-
-# Environment configuration
+# Environment
 .env
+.env.local
+*.env.*.local
 
-# Temporary files and caches
+# Temporary files
 temp/
+tmp/
+*.tmp
 
-# Local-only scratch content, anywhere in the tree (unanchored — matches at any depth)
+# Local-only content (unanchored — matches at any depth)
 _LOCAL_/
+
+# IDEs
+*.swp
+*.swo
+*~
+.vscode/settings.json

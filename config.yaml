@@ -1,0 +1,83 @@
+# OutSystems-Docs MCP Configuration
+# Edit this file to customize MCP server behavior
+
+# MCP Server Settings
+mcp:
+  # Enable/disable the MCP server
+  enabled: true
+
+  # Documentation sources to index
+  sources:
+    - odc      # OutSystems ODC documentation
+    - o11      # OutSystems O11 documentation
+
+  # Search configuration
+  search:
+    # Maximum number of results per search query
+    max_results: 5
+
+    # Minimum similarity score (0.0-1.0)
+    min_score: 0.3
+
+# Embedding Model Settings
+embeddings:
+  # Model to use for semantic search
+  model: "BAAI/bge-small-en-v1.5"
+
+  # Cache directory for downloaded model
+  # Override with env var FASTEMBED_CACHE_PATH (fastembed's own convention)
+  cache_dir: ".cache/fastembed"
+
+  # Disable Hugging Face Hub symlink caching for the model download.
+  # Windows needs Developer Mode or admin rights to create symlinks; the packaged
+  # .exe can't assume either, so set true for windows when using packaged .exe.
+  # Same effect as env var HF_HUB_DISABLE_SYMLINKS (huggingface_hub's own convention).
+  disable_hf_symlinks: false
+
+  # Execution providers (in order of preference)
+  # Available options: CUDAExecutionProvider, DmlExecutionProvider, CPUExecutionProvider
+  # DmlExecutionProvider (AMD/Intel/NVIDIA on Windows) only works after: scripts\run.cmd --directml
+  # Providers not compiled into whatever onnxruntime package is active are skipped automatically.
+  #
+  # An entry can be a plain name, or {name, options} to pass provider-specific options
+  # (onnxruntime's (name, options_dict) form). disable_metacommands works around
+  # DXGI_ERROR_DEVICE_HUNG crashes some AMD driver/model combos hit on DirectML's default
+  # metacommand (fused-op) path -- slower, but avoids the driver hang.
+  providers:
+    - CUDAExecutionProvider
+    - name: DmlExecutionProvider
+      options:
+        disable_metacommands: true
+    - CPUExecutionProvider
+
+# Documentation Index Settings
+index:
+  # Path to local documentation index
+  # Override with env var OSDOCS_INDEX_DATA_DIR
+  data_dir: "data"
+
+  # Auto-refresh index on startup
+  auto_refresh: false
+
+# Logging
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: "DEBUG"
+
+  # Log file location (empty = console only, relative path logs to installation dir)
+  # Logs to: logs/osdocs-mcp.log (created automatically)
+  file: "logs/osdocs-mcp.log"
+
+# Performance Tuning
+performance:
+  # Number of worker threads for indexing
+  worker_threads: 4
+
+  # Enable query caching
+  cache_queries: true
+
+# Secrets and API Keys
+secrets:
+  # Hugging Face API token for downloading models
+  # Override with env var HF_TOKEN (huggingface_hub's own convention)
+  hf_token: ""
