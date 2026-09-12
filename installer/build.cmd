@@ -61,7 +61,7 @@ if "%2"=="--directml" (
 )
 
 echo [*] Building osdocs-mcp.exe...
-call %VENV_PYTHON% -m nuitka --standalone --follow-imports --include-package=osdocs --include-package=hf_xet --include-package=onnxruntime --include-package-data=onnxruntime --output-dir=dist --output-file=osdocs-mcp.exe src\osdocs_mcp.py
+call %VENV_PYTHON% -m nuitka --standalone --assume-yes-for-downloads --follow-imports --include-package=osdocs --include-package=hf_xet --include-package=onnxruntime --include-package-data=onnxruntime --output-dir=dist --output-file=osdocs-mcp.exe src\osdocs_mcp.py
 REM Check the actual output file rather than trusting nuitka's exit code: a post-build
 REM step can return nonzero even after successfully producing the exe.
 if not exist dist\osdocs_mcp.dist\osdocs-mcp.exe (

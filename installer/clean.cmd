@@ -4,10 +4,10 @@ cd /d "%~dp0.."
 set "COUNT=0"
 
 rem Clean script: removes build artifacts and caches
-rem Removes: __pycache__, .pyc, .pytest_cache, coverage, logs, .cache/, temp/, tmp/, dist/, hash tracking files
+rem Removes: __pycache__, .pyc, .pytest_cache, .egg-info, *.tmp, coverage, logs, .cache/, temp/, tmp/, dist/, hash tracking files
 
-rem Delete __pycache__ in specific directories (never recurses into .venv)
-for /d /r "src\osdocs" %%d in (__pycache__) do (
+rem Delete __pycache__ under src (covers src\__pycache__, src\osdocs, src\tests; never recurses into .venv)
+for /d /r "src" %%d in (__pycache__) do (
     if exist "%%d" (
         rd /s /q "%%d" 2>nul
         if not errorlevel 1 (
@@ -16,27 +16,17 @@ for /d /r "src\osdocs" %%d in (__pycache__) do (
         )
     )
 )
-for /d /r "src\tests" %%d in (__pycache__) do (
-    if exist "%%d" (
-        rd /s /q "%%d" 2>nul
-        if not errorlevel 1 (
-            echo   [DEL] %%d
-            set /a COUNT+=1
-        )
+rem Delete root-level __pycache__
+if exist "__pycache__" (
+    rd /s /q "__pycache__" 2>nul
+    if not errorlevel 1 (
+        echo   [DEL] __pycache__\
+        set /a COUNT+=1
     )
 )
 
-rem Delete .pyc files in specific directories
-for /r "src\osdocs" %%f in (*.pyc) do (
-    if exist "%%f" (
-        del /q "%%f" 2>nul
-        if not errorlevel 1 (
-            echo   [DEL] %%f
-            set /a COUNT+=1
-        )
-    )
-)
-for /r "src\tests" %%f in (*.pyc) do (
+rem Delete .pyc files under src
+for /r "src" %%f in (*.pyc) do (
     if exist "%%f" (
         del /q "%%f" 2>nul
         if not errorlevel 1 (
@@ -46,8 +36,8 @@ for /r "src\tests" %%f in (*.pyc) do (
     )
 )
 
-rem Delete .pytest_cache in specific directories
-for /d /r "src\osdocs" %%d in (.pytest_cache) do (
+rem Delete .pytest_cache under src
+for /d /r "src" %%d in (.pytest_cache) do (
     if exist "%%d" (
         rd /s /q "%%d" 2>nul
         if not errorlevel 1 (
@@ -56,11 +46,50 @@ for /d /r "src\osdocs" %%d in (.pytest_cache) do (
         )
     )
 )
-for /d /r "src\tests" %%d in (.pytest_cache) do (
+rem Delete root-level .pytest_cache
+if exist ".pytest_cache" (
+    rd /s /q ".pytest_cache" 2>nul
+    if not errorlevel 1 (
+        echo   [DEL] .pytest_cache\
+        set /a COUNT+=1
+    )
+)
+
+rem Delete .egg-info directories under src and at root
+for /d /r "src" %%d in (*.egg-info) do (
     if exist "%%d" (
         rd /s /q "%%d" 2>nul
         if not errorlevel 1 (
             echo   [DEL] %%d
+            set /a COUNT+=1
+        )
+    )
+)
+for /d %%d in (*.egg-info) do (
+    if exist "%%d" (
+        rd /s /q "%%d" 2>nul
+        if not errorlevel 1 (
+            echo   [DEL] %%d
+            set /a COUNT+=1
+        )
+    )
+)
+
+rem Delete loose .tmp files under src and at root
+for /r "src" %%f in (*.tmp) do (
+    if exist "%%f" (
+        del /q "%%f" 2>nul
+        if not errorlevel 1 (
+            echo   [DEL] %%f
+            set /a COUNT+=1
+        )
+    )
+)
+for %%f in (*.tmp) do (
+    if exist "%%f" (
+        del /q "%%f" 2>nul
+        if not errorlevel 1 (
+            echo   [DEL] %%f
             set /a COUNT+=1
         )
     )
