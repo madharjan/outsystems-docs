@@ -28,7 +28,7 @@ jobs:
         run: uv sync
 
       - name: Install MSVC Build Tools
-        run: choco install visualstudio2022-workload-nativedesktop -y
+        run: choco install visualstudio2022-workload-nativedesktop -y --package-parameters "--quiet --norestart --wait"
 
       - name: Install Nuitka
         run: uv pip install nuitka
