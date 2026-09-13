@@ -10,6 +10,7 @@ from osdocs.config import (
     _AGENTS,
     add_agent,
     agent_status,
+    agent_verify,
     backup_agent,
     get_agent,
     list_agents,
@@ -53,6 +54,7 @@ Usage:
   osdocs-mcp --agent-remove-all     Remove from all agents
   osdocs-mcp --agent-backup AGENT   Backup agent configuration
   osdocs-mcp --agent-restore AGENT  Restore agent configuration
+  osdocs-mcp --agent-verify AGENT   Verify agent configuration
   osdocs-mcp --agent-interactive    Interactive agent configuration menu
   osdocs-mcp --version              Show version
   osdocs-mcp --help                 Show this help message
@@ -195,6 +197,10 @@ def main():
     if command == "--agent-restore" and len(sys.argv) > 2:
         agent_key = sys.argv[2]
         return 0 if restore_agent(agent_key) else 1
+
+    if command == "--agent-verify" and len(sys.argv) > 2:
+        agent_key = sys.argv[2]
+        return 0 if agent_verify(agent_key) else 1
 
     print(f"Unknown command: {command}")
     print_help()
