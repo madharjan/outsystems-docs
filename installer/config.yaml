@@ -34,13 +34,11 @@ embeddings:
   # Same effect as env var HF_HUB_DISABLE_SYMLINKS (huggingface_hub's own convention).
   disable_hf_symlinks: true
 
-  # GPU accel needs the exe built with: installer\build.cmd all --directml
-  # (swaps in onnxruntime-directml: works on AMD, Intel and NVIDIA GPUs on Windows).
-  # Without that flag the exe ships plain CPU-only onnxruntime and DmlExecutionProvider below is a no-op.
+  # installer\build.cmd always swaps in onnxruntime-directml (AMD, Intel and NVIDIA GPUs
+  # on Windows), so DmlExecutionProvider below works out of the box.
 
   # Execution providers (in order of preference)
   # Available options: DmlExecutionProvider, CPUExecutionProvider
-  # DmlExecutionProvider only works if the exe was built with --directml (see above)
   #
   # An entry can be a plain name, or {name, options} to pass provider-specific options
   # (onnxruntime's (name, options_dict) form). disable_metacommands works around

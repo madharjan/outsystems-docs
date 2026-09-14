@@ -22,11 +22,10 @@ set "DIST_DIR=dist\OutSystems-Docs"
 set "SETUP_PATH=dist\OutSystems-Docs-Setup.exe"
 
 if "%1"=="" (
-    echo Usage: installer\build.cmd [all, installer] [--directml]
+    echo Usage: installer\build.cmd [all, installer]
     echo.
     echo   all       - Build osdocs-mcp.exe and installer
     echo   installer - Build installer only
-    echo   --directml - Swap onnxruntime for onnxruntime-directml ^(AMD/Intel/NVIDIA GPU via DirectML^)
     exit /b 1
 )
 
@@ -46,11 +45,10 @@ if errorlevel 1 (
 )
 
 echo [*] Installing dependencies...
-REM --reinstall-package onnxruntime: a prior --directml build swaps in onnxruntime-directml,
-REM which shares onnxruntime's package directory. Uninstalling/swapping it back can leave
-REM stale onnxruntime-*.dist-info metadata with the actual package files gone -- uv sync
-REM trusts that metadata and skips reinstalling, so force it every time to guarantee a
-REM working onnxruntime regardless of --directml having been used before.
+REM --reinstall-package onnxruntime: uv sync trusts existing onnxruntime-*.dist-info
+REM metadata and skips reinstalling even after the onnxruntime-directml swap below
+REM overwrites the package files -- force it every time so the plain onnxruntime
+REM package is always the clean starting point.
 call uv sync --reinstall-package onnxruntime
 
 set VENV_PYTHON=.venv\Scripts\python.exe
@@ -62,11 +60,9 @@ if not exist %VENV_PYTHON% (
 if not exist dist\ mkdir dist\
 if not exist !DIST_DIR! mkdir !DIST_DIR!
 
-if "%2"=="--directml" (
-    echo [*] Swapping onnxruntime for onnxruntime-directml ^(AMD/Intel/NVIDIA GPU via DirectML^)...
-    call uv pip install --python %VENV_PYTHON% --force-reinstall --no-deps onnxruntime-directml
-    if errorlevel 1 exit /b 1
-)
+echo [*] Swapping onnxruntime for onnxruntime-directml ^(AMD/Intel/NVIDIA GPU via DirectML^)...
+call uv pip install --python %VENV_PYTHON% --force-reinstall --no-deps onnxruntime-directml
+if errorlevel 1 exit /b 1
 
 REM Nuitka needs an MSVC C++ toolchain to compile the standalone exe. Detect it via
 REM vswhere (installed alongside any VS product/Build Tools); install Build Tools with
@@ -90,7 +86,31 @@ if not exist dist\osdocs_mcp.dist\osdocs-mcp.exe (
     exit /b 1
 )
 
+echo [*] Merging corporate CA certs into bundled certifi store...
+set "CACERT=dist\osdocs_mcp.dist\certifi\cacert.pem"
+call :merge_ca "installer\zscaler-ca.cert" "zscaler-ca.cert"
+call :merge_ca "installer\cloudflare-gateway-ca.cert" "cloudflare-gateway-ca.cert"
+
 goto organize
+
+REM Appends %1 to CACERT under a marker comment naming %2, skipping if already merged
+REM (idempotent across repeat builds without a clean).
+:merge_ca
+if not exist %1 (
+    echo [SKIP] %1 not found
+    exit /b 0
+)
+findstr /C:"# osdocs-mcp: %~2" "!CACERT!" >nul
+if not errorlevel 1 (
+    echo [SKIP] %~2 already merged
+    exit /b 0
+)
+(
+    echo.
+    echo # osdocs-mcp: %~2
+    type %1
+) >> "!CACERT!"
+exit /b 0
 
 :build_installer
 if not exist dist\osdocs_mcp.dist\osdocs-mcp.exe (

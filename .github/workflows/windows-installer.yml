@@ -9,10 +9,6 @@ jobs:
   build:
     runs-on: windows-latest
 
-    strategy:
-      matrix:
-        variant: [standard, directml]
-
     steps:
       - uses: actions/checkout@v3
 
@@ -36,28 +32,18 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup -y
 
-      - name: Build executables (standard)
-        if: matrix.variant == 'standard'
+      - name: Build executables
         run: installer\build.cmd all
-
-      - name: Build executables (DirectML GPU)
-        if: matrix.variant == 'directml'
-        run: installer\build.cmd all --directml
 
       - name: Build installer
         run: |
           cd installer
           iscc outsystems-docs.iss
 
-      - name: Rename DirectML installer
-        if: matrix.variant == 'directml'
-        shell: pwsh
-        run: Rename-Item -Path 'dist\OutSystems-Docs-Setup.exe' -NewName 'OutSystems-Docs-Setup-DirectML.exe'
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: installer-${{ matrix.variant }}
+          name: installer
           path: dist/OutSystems-Docs-Setup*.exe
 
   release:
@@ -67,14 +53,24 @@ jobs:
       contents: write
 
     steps:
-      - name: Download all installers
+      - uses: actions/checkout@v3
+
+      - name: Extract release notes for this version
+        run: |
+          awk -v tag="${{ github.ref_name }}" '
+            $0 ~ "^## " tag { found=1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+
+      - name: Download installer
         uses: actions/download-artifact@v4
         with:
+          name: installer
           path: dist
-          pattern: installer-*
-          merge-multiple: true
 
       - name: Upload to releases
         uses: softprops/action-gh-release@v1
         with:
           files: dist/OutSystems-Docs-Setup*.exe
+          body_path: release_notes.md

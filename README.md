@@ -12,13 +12,14 @@ Credit: Original project by [donnieprakoso](https://github.com/donnieprakoso) - 
 Enhancements:
 
 - Windows installer for one-click setup - [download from releases](https://github.com/madharjan/outsystems-docs/releases/latest)
-- Optional AMD/Intel/NVIDIA GPU acceleration via DirectML, with automatic CPU fallback
+- GPU acceleration (DirectML) AMD/Intel/NVIDIA GPU via DirectML, with automatic CPU fallback
 - Fixed path resolution so the server works regardless of launch directory
 - Faster CLI - no MCP server startup cost on `--sync` and other commands
 - Windows symlink workaround for the Hugging Face cache
 - Agent configuration: add/remove/status/backup/restore in one command
 - Additional logging and documentation in `docs/` folder.
 - Richer MCP results: every `search_docs`/`get_doc` result now carries `url`, `category`, and `last_updated` - see [MCP Definitions](docs/MCP_DEFINITIONS.md)
+- Windows builds trust Zscaler and Cloudflare corporate proxies automatically, so syncing docs and downloading the AI model works on locked-down company networks
 
 ---
 

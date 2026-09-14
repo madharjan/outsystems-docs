@@ -36,7 +36,8 @@ embeddings:
 
   # Execution providers (in order of preference)
   # Available options: CUDAExecutionProvider, DmlExecutionProvider, CPUExecutionProvider
-  # DmlExecutionProvider (AMD/Intel/NVIDIA on Windows) only works after: scripts\run.cmd --directml
+  # DmlExecutionProvider (AMD/Intel/NVIDIA on Windows) needs onnxruntime-directml,
+  # which scripts\run.cmd swaps in automatically (Windows only).
   # Providers not compiled into whatever onnxruntime package is active are skipped automatically.
   #
   # An entry can be a plain name, or {name, options} to pass provider-specific options

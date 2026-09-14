@@ -196,42 +196,49 @@ _AGENTS = {
         "config_path": "~/.claude.json",
         "config_key": "mcpServers",
         "command": "osdocs-mcp",
+        "extra_fields": {"type": "stdio"},
     },
     "claude_desktop": {
         "display_name": "Claude Desktop",
         "config_path": _get_claude_desktop_config_path,
         "config_key": "mcpServers",
         "command": "osdocs-mcp",
+        "extra_fields": {"type": "stdio"},
     },
     "cursor": {
         "display_name": "Cursor IDE",
         "config_path": "~/.cursor/mcp.json",
         "config_key": "mcpServers",
         "command": "osdocs-mcp",
+        "extra_fields": {"type": "stdio"},
     },
     "gemini_cli": {
         "display_name": "Gemini CLI",
         "config_path": "~/.gemini/config.json",
         "config_key": "mcpServers",
         "command": "osdocs-mcp",
+        "extra_fields": {"type": "stdio"},
     },
     "copilot_cli": {
         "display_name": "GitHub Copilot CLI",
         "config_path": "~/.copilot/mcp-config.json",
         "config_key": "servers",
         "command": "osdocs-mcp",
+        "extra_fields": {"type": "stdio"},
     },
     "copilot_vscode": {
         "display_name": "GitHub Copilot (VS Code)",
         "config_path": "~/AppData/Roaming/Code/User/mcp.json",
         "config_key": "servers",
         "command": "osdocs-mcp",
+        "extra_fields": {"type": "stdio"},
     },
     "jetbrains": {
         "display_name": "JetBrains IDEs",
         "config_path": "~/.jetbrains.ai/mcp.json",
         "config_key": "mcpServers",
         "command": "osdocs-mcp",
+        "extra_fields": {"type": "stdio"},
     },
     "openai_codex": {
         "display_name": "OpenAI Codex",
@@ -244,6 +251,11 @@ _AGENTS = {
         "config_path": "~/.config/opencode/opencode.json",
         "config_key": "mcp",
         "command": "osdocs-mcp",
+        # OpenCode's schema wants an MCP entry shaped {"type": "local", "command": [argv...]}
+        # -- a bare {"command": "<path>"} string (every other agent's shape) fails its
+        # config validation.
+        "command_as_list": True,
+        "extra_fields": {"type": "local"},
     },
     "continue": {
         "display_name": "Continue (VS Code)",
@@ -263,6 +275,7 @@ _AGENTS = {
         "config_path": "~/.codeium/windsurf/mcp_config.json",
         "config_key": "servers",
         "command": "osdocs-mcp",
+        "extra_fields": {"type": "stdio"},
     },
 }
 
@@ -415,7 +428,9 @@ def add_agent(agent_key: str) -> bool:
 
     config = load_config(config_path)
     config_key = agent["config_key"]
-    entry = {"command": get_executable_path()}
+    exe_path = get_executable_path()
+    entry = {"command": [exe_path] if agent.get("command_as_list", False) else exe_path}
+    entry.update(agent.get("extra_fields", {}))
 
     if agent.get("is_array", False):
         items = config.get(config_key)
@@ -527,10 +542,11 @@ def agent_verify(agent_key: str) -> bool:
     command = entry.get("command", "")
     print(f"  [OK] outsystems-docs entry found: {command}")
 
-    if command and Path(command).exists():
-        print(f"  [OK] Command path accessible: {command}")
-    elif command:
-        print(f"  [WARN] Command path not accessible: {command}")
+    command_path = command[0] if isinstance(command, list) else command
+    if command_path and Path(command_path).exists():
+        print(f"  [OK] Command path accessible: {command_path}")
+    elif command_path:
+        print(f"  [WARN] Command path not accessible: {command_path}")
 
     print(f"{agent['display_name']} verification completed")
     return True

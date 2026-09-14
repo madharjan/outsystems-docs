@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """OutSystems-Docs MCP - Consolidated entry point."""
 
+import os
 import sys
 from importlib.metadata import version, PackageNotFoundError
-from osdocs.config import load_app_config
+from pathlib import Path
+from osdocs.config import get_app_root, load_app_config
 from osdocs.logging_util import get_logger
 from osdocs.sync import main as sync_main
 from osdocs.config import (
@@ -19,12 +21,34 @@ from osdocs.config import (
     restore_agent,
 )
 
+
+def _configure_ca_bundle() -> None:
+    """Point git and Python's own TLS at the CA bundle -- merged with corporate
+    (Zscaler/Cloudflare Gateway) root certs by installer/build.cmd for the frozen exe.
+
+    ``SSL_CERT_FILE`` covers ``urllib.request`` (sitemap.py) and anything else using
+    OpenSSL's default verify paths; ``GIT_SSL_CAINFO`` covers ``git clone`` (fetch.py),
+    since git doesn't read Python's trust store. ``setdefault`` so a user-set override
+    (or a value already inherited from the parent process) always wins.
+    """
+    if getattr(sys, "frozen", False) or "__compiled__" in globals():
+        cacert = get_app_root() / "certifi" / "cacert.pem"
+    else:
+        import certifi
+        cacert = Path(certifi.where())
+
+    if cacert.exists():
+        os.environ.setdefault("SSL_CERT_FILE", str(cacert))
+        os.environ.setdefault("GIT_SSL_CAINFO", str(cacert))
+
+
+_configure_ca_bundle()
+
 # Initialize config and logging
 load_app_config()
 logger = get_logger(__name__)
 
 # Set HF_TOKEN from config if available
-import os
 from osdocs.config import get_app_config
 hf_token = get_app_config().get("secrets.hf_token", "")
 if hf_token:
