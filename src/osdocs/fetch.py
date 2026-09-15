@@ -62,7 +62,14 @@ def sparse_clone(repo, branch, dest, *, paths=("src",), runner=subprocess.run) -
         ["git", "-C", dest, "checkout"],
     ]
     for cmd in commands:
-        result = runner(cmd, capture_output=True, text=True)
+        try:
+            result = runner(cmd, capture_output=True, text=True)
+        except OSError as exc:
+            raise FetchError(
+                "git executable not found or could not be run "
+                f"({exc}). Install Git for Windows "
+                "(https://git-scm.com/download/win) and re-run --sync."
+            ) from None
         if getattr(result, "returncode", 0) != 0:
             stderr = getattr(result, "stderr", "") or ""
             raise FetchError(f"git command failed: {' '.join(cmd)}\n{stderr}".rstrip())

@@ -50,7 +50,6 @@ var
   BackupCallCount: Integer;
   AppVersion: String;
   HFToken: String;
-  SkipSync: Boolean;
 
 procedure LogToFile(const Message: String);
 var
@@ -378,16 +377,39 @@ begin
   end;
 end;
 
-function HasExistingData(): Boolean;
+{ Documentation sync shells out to git.exe; install Git for Windows via winget
+  (per-user, matching PrivilegesRequired=lowest) if it isn't already on PATH. }
+procedure InstallGitIfMissing();
+var
+  ResultCode: Integer;
 begin
-  Result := DirExists(ExpandConstant('{app}\data')) or DirExists(ExpandConstant('{app}\.cache'));
+  if Exec(ExpandConstant('{cmd}'), '/c where git', '', SW_HIDE,
+    ewWaitUntilTerminated, ResultCode) and (ResultCode = 0) then
+  begin
+    LogDebug('Git for Windows already on PATH');
+    Exit;
+  end;
+
+  LogDebug('Git not found on PATH, installing via winget...');
+  LogOutput('Installing Git for Windows (required for documentation sync) ...');
+  if Exec(ExpandConstant('{cmd}'),
+    '/c winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements',
+    '', SW_HIDE, ewWaitUntilTerminated, ResultCode) and (ResultCode = 0) then
+  begin
+    LogDebug('Git for Windows installed successfully via winget');
+    LogOutput('... Done');
+  end
+  else
+  begin
+    LogDebug('WARNING: winget install of Git for Windows failed (exit code ' + IntToStr(ResultCode) + ')');
+    LogOutput('... Could not auto-install Git. Install it manually from https://git-scm.com/download/win');
+  end;
 end;
 
 procedure InitializeWizard;
 var
   i: Integer;
 begin
-  SkipSync := False;
   AppVersion := ExpandConstant('{#VERSION}');
   LogDebug('========== WIZARD INITIALIZATION (v' + AppVersion + ') ==========');
   LogBuildFilesList();
@@ -549,6 +571,7 @@ begin
       LogDebug('Step: Installation beginning - files will be copied');
     ssPostInstall:
     begin
+      InstallGitIfMissing();
       LogDebug('Step: Post-installation - running backup before Agent registration');
       Inc(BackupCallCount);
       LogDebug('Executing: --agent-backup (call #' + IntToStr(BackupCallCount) + ')');
@@ -557,29 +580,16 @@ begin
     end;
     ssDone:
     begin
-      if HasExistingData() then
-      begin
-        LogDebug('Existing data/.cache folder found at ' + ExpandConstant('{app}'));
-        if MsgBox('Existing data found. Skip syncing documentation?', mbConfirmation, MB_YESNO) = IDYES then
-          SkipSync := True
-        else
-          SkipSync := False;
-      end;
-
-      if SkipSync then
-      begin
-        LogDebug('Step: Installation complete - SkipSync=True, reusing existing data/.cache, not launching sync');
-      end
+      { osdocs-mcp.exe --sync is launched detached (ewNoWait), so it must never block on
+        its own interactive overwrite-confirmation prompt (see sync.py) - the installer
+        passes --yes to skip that prompt for this installer-triggered run. }
+      LogDebug('Step: Installation complete - triggering documentation sync');
+      LogDebug('Launching: osdocs-mcp.exe --sync --yes (external process)');
+      if HFToken <> '' then
+        Exec(ExpandConstant('{sys}\cmd.exe'), '/k "set HF_TOKEN=' + HFToken + ' && "' + ExpandConstant('{app}\osdocs-mcp.exe') + '" --sync --yes"', ExpandConstant('{app}'), SW_SHOW, ewNoWait, ResultCode)
       else
-      begin
-        LogDebug('Step: Installation complete - triggering documentation sync');
-        LogDebug('Launching: osdocs-mcp.exe --sync (external process)');
-        if HFToken <> '' then
-          Exec(ExpandConstant('{sys}\cmd.exe'), '/k "set HF_TOKEN=' + HFToken + ' && "' + ExpandConstant('{app}\osdocs-mcp.exe') + '" --sync"', ExpandConstant('{app}'), SW_SHOW, ewNoWait, ResultCode)
-        else
-          Exec(ExpandConstant('{sys}\cmd.exe'), '/k "' + ExpandConstant('{app}\osdocs-mcp.exe') + '" --sync', ExpandConstant('{app}'), SW_SHOW, ewNoWait, ResultCode);
-        LogDebug('Sync process launched in background');
-      end;
+        Exec(ExpandConstant('{sys}\cmd.exe'), '/k "' + ExpandConstant('{app}\osdocs-mcp.exe') + '" --sync --yes', ExpandConstant('{app}'), SW_SHOW, ewNoWait, ResultCode);
+      LogDebug('Sync process launched in background');
     end;
   end;
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -160,8 +161,26 @@ def main(argv=None) -> SyncReport:
         "--no-links", action="store_true",
         help="skip fetching the sitemap (chunks get no canonical URLs)",
     )
+    parser.add_argument(
+        "--yes", action="store_true",
+        help="skip the overwrite confirmation when an existing index is found",
+    )
     args = parser.parse_args(argv)
     args.data_dir = str(resolve_path(args.data_dir))
+
+    if (Path(args.data_dir) / "vectors.npz").exists() and not args.yes and sys.stdin.isatty():
+        try:
+            answer = input(
+                "An existing documentation index was found at "
+                f"{args.data_dir}. Re-syncing rebuilds it from scratch and can take "
+                "several minutes. Continue? [y/N] "
+            ).strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print("\nSync cancelled. Existing index kept.")
+            raise SystemExit(0) from None
+        if answer not in ("y", "yes"):
+            print("Sync cancelled. Existing index kept.")
+            raise SystemExit(0)
 
     from osdocs.embed import fastembed_embedder  # lazy: avoids importing fastembed for --help
 
@@ -187,10 +206,16 @@ def main(argv=None) -> SyncReport:
         except Exception as exc:  # noqa: BLE001 - links are optional; never fail the sync
             logger.warning(f"Could not fetch sitemap ({exc}); proceeding without links.")
 
-    report = sync_sources(
-        sources, args.data_dir, fetch=_git_fetch, embed=fastembed_embedder(),
-        sitemap_urls=sitemap_urls, progress=logger.info,
-    )
+    try:
+        report = sync_sources(
+            sources, args.data_dir, fetch=_git_fetch, embed=fastembed_embedder(),
+            sitemap_urls=sitemap_urls, progress=logger.info,
+        )
+    except Exception as exc:
+        print("=" * 60)
+        print(f"  Sync failed: {exc}")
+        print("=" * 60)
+        raise SystemExit(1) from None
     logger.info(f"Synced {report.num_sources} source(s), {report.num_chunks} chunks >> {args.data_dir}")
 
     print("=" * 60)
