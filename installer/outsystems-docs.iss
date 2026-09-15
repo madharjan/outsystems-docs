@@ -1,10 +1,10 @@
 ﻿#define BUILD_DIR "..\dist"
 #define BUILD_FOLDER "OutSystems-Docs"
-#define VERSION "1.0.1"
+#define VERSION "1.0.2"
 
 [Setup]
 AppName=OutSystems-Docs MCP
-AppVersion=1.0.1
+AppVersion=1.0.2
 AppPublisher=Community
 AppCopyright=Copyright (c) 2026 OutSystems
 LicenseFile=LICENSE.txt
@@ -17,7 +17,7 @@ Compression=lzma
 SolidCompression=yes
 ShowLanguageDialog=no
 DisableWelcomePage=no
-VersionInfoVersion=1.0.1.0
+VersionInfoVersion=1.0.2.0
 
 [Files]
 Source: "{#BUILD_DIR}\{#BUILD_FOLDER}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion

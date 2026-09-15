@@ -1,6 +1,6 @@
 [project]
 name = "outsystems-docs"
-version = "1.0.1"
+version = "1.0.2"
 description = "Local MCP server serving OutSystems ODC/O11 documentation"
 requires-python = ">=3.10"
 dependencies = [
