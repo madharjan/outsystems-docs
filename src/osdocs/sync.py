@@ -168,7 +168,13 @@ def main(argv=None) -> SyncReport:
     args = parser.parse_args(argv)
     args.data_dir = str(resolve_path(args.data_dir))
 
-    if (Path(args.data_dir) / "vectors.npz").exists() and not args.yes and sys.stdin.isatty():
+    if (Path(args.data_dir) / "vectors.npz").exists() and not args.yes:
+        if not sys.stdin.isatty():
+            print(
+                f"An existing documentation index was found at {args.data_dir} and there's "
+                "no terminal to confirm the overwrite. Pass --yes to re-sync non-interactively."
+            )
+            raise SystemExit(1)
         try:
             answer = input(
                 "An existing documentation index was found at "

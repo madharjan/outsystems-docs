@@ -50,6 +50,8 @@ var
   BackupCallCount: Integer;
   AppVersion: String;
   HFToken: String;
+  SkipSync: Boolean;
+  GitCmdDirToPrepend: String;
 
 procedure LogToFile(const Message: String);
 var
@@ -377,6 +379,11 @@ begin
   end;
 end;
 
+function HasExistingData(): Boolean;
+begin
+  Result := DirExists(ExpandConstant('{app}\data')) or DirExists(ExpandConstant('{app}\.cache'));
+end;
+
 { Documentation sync shells out to git.exe; install Git for Windows via winget
   (per-user, matching PrivilegesRequired=lowest) if it isn't already on PATH. }
 procedure InstallGitIfMissing();
@@ -392,12 +399,20 @@ begin
 
   LogDebug('Git not found on PATH, installing via winget...');
   LogOutput('Installing Git for Windows (required for documentation sync) ...');
+  { --scope user matches PrivilegesRequired=lowest: a machine-scope install would need
+    elevation this unelevated installer can't grant. }
   if Exec(ExpandConstant('{cmd}'),
-    '/c winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements',
+    '/c winget install --id Git.Git -e --scope user --source winget --accept-package-agreements --accept-source-agreements',
     '', SW_HIDE, ewWaitUntilTerminated, ResultCode) and (ResultCode = 0) then
   begin
     LogDebug('Git for Windows installed successfully via winget');
     LogOutput('... Done');
+    { The installer's own process env block is a snapshot from before winget updated the
+      registry, so it (and anything it Execs, including the detached sync launched later)
+      still can't resolve git.exe by name. Point later launches straight at the user-scope
+      install dir instead of relying on a PATH refresh that won't happen in this process. }
+    if DirExists(ExpandConstant('{localappdata}\Programs\Git\cmd')) then
+      GitCmdDirToPrepend := ExpandConstant('{localappdata}\Programs\Git\cmd');
   end
   else
   begin
@@ -563,6 +578,7 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   ResultCode: Integer;
+  EnvPrefix: String;
 begin
   LogDebug('========== SETUP STEP CHANGED ==========');
 
@@ -580,16 +596,36 @@ begin
     end;
     ssDone:
     begin
-      { osdocs-mcp.exe --sync is launched detached (ewNoWait), so it must never block on
-        its own interactive overwrite-confirmation prompt (see sync.py) - the installer
-        passes --yes to skip that prompt for this installer-triggered run. }
-      LogDebug('Step: Installation complete - triggering documentation sync');
-      LogDebug('Launching: osdocs-mcp.exe --sync --yes (external process)');
-      if HFToken <> '' then
-        Exec(ExpandConstant('{sys}\cmd.exe'), '/k "set HF_TOKEN=' + HFToken + ' && "' + ExpandConstant('{app}\osdocs-mcp.exe') + '" --sync --yes"', ExpandConstant('{app}'), SW_SHOW, ewNoWait, ResultCode)
+      SkipSync := False;
+      if HasExistingData() then
+      begin
+        LogDebug('Existing data/.cache folder found at ' + ExpandConstant('{app}'));
+        SkipSync := MsgBox('Existing data found. Skip syncing documentation?', mbConfirmation, MB_YESNO) = IDYES;
+      end;
+
+      if SkipSync then
+      begin
+        LogDebug('Step: Installation complete - user chose to skip sync, reusing existing data/.cache');
+      end
       else
-        Exec(ExpandConstant('{sys}\cmd.exe'), '/k "' + ExpandConstant('{app}\osdocs-mcp.exe') + '" --sync --yes', ExpandConstant('{app}'), SW_SHOW, ewNoWait, ResultCode);
-      LogDebug('Sync process launched in background');
+      begin
+        { osdocs-mcp.exe --sync is launched detached (ewNoWait), so it must never block on
+          its own interactive overwrite-confirmation prompt (see sync.py) - the user already
+          confirmed the overwrite above (or there was nothing to overwrite), so --yes skips
+          that redundant prompt for this installer-triggered run. }
+        LogDebug('Step: Installation complete - triggering documentation sync');
+        LogDebug('Launching: osdocs-mcp.exe --sync --yes (external process)');
+        EnvPrefix := '';
+        if GitCmdDirToPrepend <> '' then
+          EnvPrefix := EnvPrefix + 'set "PATH=' + GitCmdDirToPrepend + ';%PATH%" && ';
+        if HFToken <> '' then
+          EnvPrefix := EnvPrefix + 'set HF_TOKEN=' + HFToken + ' && ';
+        if EnvPrefix <> '' then
+          Exec(ExpandConstant('{sys}\cmd.exe'), '/k "' + EnvPrefix + '"' + ExpandConstant('{app}\osdocs-mcp.exe') + '" --sync --yes"', ExpandConstant('{app}'), SW_SHOW, ewNoWait, ResultCode)
+        else
+          Exec(ExpandConstant('{sys}\cmd.exe'), '/k "' + ExpandConstant('{app}\osdocs-mcp.exe') + '" --sync --yes', ExpandConstant('{app}'), SW_SHOW, ewNoWait, ResultCode);
+        LogDebug('Sync process launched in background');
+      end;
     end;
   end;
 
